@@ -1,11 +1,12 @@
 export type TodoItem = {
   id: string;
-  text: string;
+  title: string;
+  description: string;
   isCompleted: boolean;
   isEdit: boolean;
 };
 export type FormProps = {
-  onAddTodo: (text: string) => void;
+  onAddTodo: (titile: string, des: string) => void;
   selectedEditTodo: TodoItem | null;
-  onUpdateTodo: (text: string) => void;
+  onUpdateTodo: (titile: string, des: string) => void;
 };

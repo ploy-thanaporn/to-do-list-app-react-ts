@@ -3,17 +3,21 @@ import Form from "./Form";
 import Item from "./Item";
 import { TodoItem } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import BtnFilter from "./BtnFilter";
 
 const TodoList = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [selectedEditTodo, setSelectedEditTodo] = useState<TodoItem | null>(
     null
   );
+  const [filter, setFilter] = useState<string>("");
+  const [click, setClick] = useState<boolean>(false);
 
-  const handleAddTodo = (text: string) => {
+  const handleAddTodo = (titile: string, des: string) => {
     const newTodo: TodoItem = {
       id: uuidv4(),
-      text: text,
+      title: titile,
+      description: des,
       isCompleted: false,
       isEdit: false,
     };
@@ -42,25 +46,65 @@ const TodoList = () => {
     }
   };
 
-  const handleUpdateTodo = (newText: string) => {
+  const handleUpdateTodo = (newText: string, newDes: string) => {
     if (selectedEditTodo) {
       const updatedTodos = todos.map((todo: TodoItem) =>
-        todo.id === selectedEditTodo.id ? { ...todo, text: newText } : todo
+        todo.id === selectedEditTodo.id
+          ? { ...todo, text: newText, description: newDes }
+          : todo
       );
       setTodos(updatedTodos);
       setSelectedEditTodo(null);
     }
   };
 
+  const filterButtons = [
+    { text: "All", filterValue: "All" },
+    { text: "Incomplete", filterValue: "Incomplete" },
+    { text: "Complete", filterValue: "Complete" },
+  ];
+
+  const handleFilterChange = (filterValue: string) => {
+    setClick(!click);
+
+    if (!click) {
+      setFilter("All");
+    } else {
+      setFilter(filterValue);
+    }
+  };
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "All") {
+      return true;
+    } else if (filter === "Complete") {
+      return todo.isCompleted;
+    } else {
+      return !todo.isCompleted;
+    }
+  });
+
   return (
     <div>
-      <div className="w-full max-w-[540px] bg-white mt-20 mx-auto mb-5 pt-10 px-[30px] pb-[70px] rounded-md">
+      <div className="w-full max-w-[640px] bg-white mt-20 mx-auto mb-5 pt-10 px-[30px] pb-[70px] rounded-md">
         <Form
           onAddTodo={handleAddTodo}
           selectedEditTodo={selectedEditTodo}
           onUpdateTodo={handleUpdateTodo}
         />
-        {todos.map((item) => (
+        {/* filter */}
+        <div className="flex justify-center gap-x-3 my-6">
+          {filterButtons.map((button) => (
+            <BtnFilter
+              key={button.text}
+              onClick={handleFilterChange}
+              isActive={filter === button.filterValue ? true : false}
+              text={button.text}
+            />
+          ))}
+        </div>
+
+        {filteredTodos.map((item) => (
           <Item
             key={item.id}
             item={item}
