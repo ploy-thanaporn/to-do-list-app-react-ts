@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Form from "./Form";
 import Item from "./Item";
 import { TodoItem } from "../types";
@@ -10,8 +10,23 @@ const TodoList = () => {
   const [selectedEditTodo, setSelectedEditTodo] = useState<TodoItem | null>(
     null
   );
-  const [filter, setFilter] = useState<string>("");
+  const [filter, setFilter] = useState<string>("All");
   const [click, setClick] = useState<boolean>(false);
+  const [hasTodoChanged, setHasTodoChanged] = useState<boolean>(false);
+
+  useEffect(() => {
+    const todoList = localStorage.getItem("todoList");
+
+    if (todoList) {
+      setTodos(JSON.parse(todoList));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasTodoChanged === true) {
+      localStorage.setItem("todoList", JSON.stringify(todos));
+    }
+  }, [todos, hasTodoChanged]);
 
   const handleAddTodo = (titile: string, des: string) => {
     const newTodo: TodoItem = {
@@ -21,6 +36,8 @@ const TodoList = () => {
       isCompleted: false,
       isEdit: false,
     };
+
+    setHasTodoChanged(true);
     setTodos([...todos, newTodo]);
   };
 
@@ -31,11 +48,15 @@ const TodoList = () => {
       }
       return todo;
     });
+
+    setHasTodoChanged(true);
     setTodos(updatedTodos);
   };
 
   const handleDeleteTodo = (id: string) => {
     const updatedTodos = todos.filter((todo) => todo.id !== id);
+
+    setHasTodoChanged(true);
     setTodos(updatedTodos);
   };
 
@@ -53,8 +74,10 @@ const TodoList = () => {
           ? { ...todo, text: newText, description: newDes }
           : todo
       );
+
       setTodos(updatedTodos);
       setSelectedEditTodo(null);
+      setHasTodoChanged(true);
     }
   };
 
@@ -67,11 +90,7 @@ const TodoList = () => {
   const handleFilterChange = (filterValue: string) => {
     setClick(!click);
 
-    if (!click) {
-      setFilter("All");
-    } else {
-      setFilter(filterValue);
-    }
+    setFilter(filterValue);
   };
 
   const filteredTodos = todos.filter((todo) => {
@@ -79,7 +98,7 @@ const TodoList = () => {
       return true;
     } else if (filter === "Complete") {
       return todo.isCompleted;
-    } else {
+    } else if (filter === "Incomplete") {
       return !todo.isCompleted;
     }
   });
